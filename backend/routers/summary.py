@@ -67,6 +67,16 @@ async def get_latest_summary(session: AsyncSession = Depends(get_db)):
 @router.post("/generate")
 async def generate_summary(session: AsyncSession = Depends(get_db)):
     """Trigger manual summary generation using the configured AI model."""
+    from fastapi import HTTPException
+    from config import get_settings
+
+    settings = get_settings()
+    if not settings.openrouter_api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="OpenRouter API key not configured. Please set OPENROUTER_API_KEY in .env file."
+        )
+
     # Gather latest market data
     price_sub = (
         select(

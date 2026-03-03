@@ -84,13 +84,18 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [refreshData]);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleGenerateSummary = async () => {
     setIsGenerating(true);
+    setError(null);
     try {
       const newSummary = await api.generateSummary();
       setSummary(newSummary);
-    } catch {
-      // silently handle — user can retry
+      setActiveTab('analysis');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to generate summary';
+      setError(msg);
     } finally {
       setIsGenerating(false);
     }
@@ -143,6 +148,14 @@ export default function Home() {
             </button>
           ))}
         </nav>
+
+        {/* Error toast */}
+        {error && (
+          <div className="mb-4 flex items-center justify-between rounded-lg border border-red-800 bg-red-900/30 px-4 py-3 text-sm text-red-300">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-white">✕</button>
+          </div>
+        )}
 
         {/* Tab content */}
         {activeTab === 'overview' && <MarketOverview prices={prices} />}
