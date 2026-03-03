@@ -1,0 +1,46 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from database import init_db
+from scheduler import start_scheduler, stop_scheduler
+from routers.market import router as market_router
+from routers.news import router as news_router
+from routers.summary import router as summary_router
+from routers.settings import router as settings_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+
+app = FastAPI(title="AI Investment Agent", version="0.1.0", lifespan=lifespan)
+
+# CORS — allow all origins during development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Include routers ---
+app.include_router(market_router, prefix="/api")
+app.include_router(news_router, prefix="/api")
+app.include_router(summary_router, prefix="/api")
+app.include_router(settings_router, prefix="/api")
+
+
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
