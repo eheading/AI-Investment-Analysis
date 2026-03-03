@@ -28,7 +28,24 @@ export const api = {
     const res = await fetchAPI<{ summaries: AISummary[] }>(`/summaries?page=${page}`);
     return res.summaries;
   },
-  generateSummary: () => fetchAPI<AISummary>('/summaries/generate', { method: 'POST' }),
+  generateSummary: async (): Promise<AISummary> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min timeout
+    try {
+      const res = await fetch('http://localhost:8000/api/summaries/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
   getModels: () => fetchAPI<ModelInfo[]>('/settings/models'),
   getModel: async () => {
     const res = await fetchAPI<{ model: string }>('/settings/model');
