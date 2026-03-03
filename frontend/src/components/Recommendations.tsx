@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import ChartModal from './ChartModal';
+
 export interface Recommendation {
   symbol: string;
   action: 'BUY' | 'SELL' | 'HOLD';
@@ -20,6 +23,7 @@ function confidenceColor(confidence: number): string {
 }
 
 export default function Recommendations({ recommendations }: { recommendations: Recommendation[] }) {
+  const [chartSymbol, setChartSymbol] = useState<string | null>(null);
   const sorted = [...recommendations].sort((a, b) => b.confidence - a.confidence);
 
   const buyCount = recommendations.filter((r) => r.action === 'BUY').length;
@@ -57,7 +61,8 @@ export default function Recommendations({ recommendations }: { recommendations: 
           {sorted.map((rec) => (
             <div
               key={rec.symbol}
-              className="rounded-lg border border-[#1e1e2e] bg-[#111118] p-4"
+              onClick={() => setChartSymbol(rec.symbol)}
+              className="rounded-lg border border-[#1e1e2e] bg-[#111118] p-4 cursor-pointer hover:border-indigo-500/50 transition-colors"
             >
               {/* Symbol + Action badge */}
               <div className="flex items-center justify-between mb-3">
@@ -82,9 +87,15 @@ export default function Recommendations({ recommendations }: { recommendations: 
 
               {/* Reasoning */}
               <p className="text-sm text-gray-400">{rec.reasoning}</p>
+              <p className="text-xs text-indigo-400 mt-2">Click to view chart →</p>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Chart Modal */}
+      {chartSymbol && (
+        <ChartModal symbol={chartSymbol} onClose={() => setChartSymbol(null)} />
       )}
     </section>
   );
