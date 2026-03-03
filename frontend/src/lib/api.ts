@@ -30,6 +30,10 @@ export const api = {
   },
   generateSummary: () => fetchAPI<AISummary>('/summaries/generate', { method: 'POST' }),
   getModels: () => fetchAPI<ModelInfo[]>('/settings/models'),
+  getModel: async () => {
+    const res = await fetchAPI<{ model: string }>('/settings/model');
+    return res.model;
+  },
   setModel: (modelId: string) =>
     fetchAPI<void>('/settings/model', {
       method: 'PUT',

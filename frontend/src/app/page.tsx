@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo } from '@/types';
+import type { PriceSnapshot, NewsArticle, AISummary } from '@/types';
 import { api } from '@/lib/api';
 import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
@@ -23,7 +23,6 @@ export default function Home() {
   const [prices, setPrices] = useState<PriceSnapshot[]>([]);
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [summary, setSummary] = useState<AISummary | null>(null);
-  const [models, setModels] = useState<ModelInfo[]>([]);
   const [currentModel, setCurrentModel] = useState<string>('openai/gpt-4o');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +33,7 @@ export default function Home() {
       api.getMarketPrices(),
       api.getNews(),
       api.getLatestSummary(),
-      api.getModels(),
+      api.getModel(),
     ]);
 
     const loadedPrices = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -43,13 +42,7 @@ export default function Home() {
     if (results[0].status === 'fulfilled') setPrices(loadedPrices);
     if (results[1].status === 'fulfilled') setArticles(loadedArticles);
     if (results[2].status === 'fulfilled') setSummary(results[2].value);
-    if (results[3].status === 'fulfilled') {
-      const modelList = results[3].value;
-      setModels(modelList);
-      if (modelList.length > 0 && currentModel === 'openai/gpt-4o') {
-        setCurrentModel(modelList[0].id);
-      }
-    }
+    if (results[3].status === 'fulfilled') setCurrentModel(results[3].value);
 
     setIsLoading(false);
 
@@ -67,7 +60,7 @@ export default function Home() {
       if (freshResults[0].status === 'fulfilled') setPrices(freshResults[0].value);
       if (freshResults[1].status === 'fulfilled') setArticles(freshResults[1].value);
     }
-  }, [currentModel]);
+  }, []);
 
   useEffect(() => {
     refreshData();
@@ -90,6 +83,7 @@ export default function Home() {
     setIsGenerating(true);
     setError(null);
     try {
+      await api.setModel(currentModel);
       const newSummary = await api.generateSummary();
       setSummary(newSummary);
       setActiveTab('analysis');
@@ -101,14 +95,8 @@ export default function Home() {
     }
   };
 
-  const handleModelChange = async (modelId: string) => {
+  const handleModelChange = (modelId: string) => {
     setCurrentModel(modelId);
-    try {
-      await api.setModel(modelId);
-    } catch {
-      // revert on failure
-      setCurrentModel(currentModel);
-    }
   };
 
   const lastUpdated = summary?.created_at
@@ -124,7 +112,6 @@ export default function Home() {
     <div className="min-h-screen" style={{ backgroundColor: '#0a0a12', color: '#e5e5e5' }}>
       <Header
         currentModel={currentModel}
-        models={models.map((m) => ({ id: m.id, name: m.name }))}
         onModelChange={handleModelChange}
         onGenerateSummary={handleGenerateSummary}
         isGenerating={isGenerating}

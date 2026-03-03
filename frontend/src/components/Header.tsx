@@ -4,41 +4,19 @@ import React from 'react';
 
 interface HeaderProps {
   currentModel: string;
-  models: { id: string; name: string }[];
   onModelChange: (modelId: string) => void;
   onGenerateSummary: () => void;
   isGenerating: boolean;
   lastUpdated: string | null;
 }
 
-const FALLBACK_MODELS = [
-  { id: 'openai/gpt-4o', name: 'GPT-4o' },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
-  { id: 'openai/gpt-4.1', name: 'GPT-4.1' },
-  { id: 'openai/o3-mini', name: 'OpenAI o3-mini' },
-  { id: 'anthropic/claude-3.7-sonnet', name: 'Claude 3.7 Sonnet' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-  { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku' },
-  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash' },
-  { id: 'google/gemini-2.5-pro-preview', name: 'Gemini 2.5 Pro' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
-  { id: 'deepseek/deepseek-chat-v3-0324', name: 'DeepSeek V3' },
-  { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B' },
-  { id: 'mistralai/mistral-large-2', name: 'Mistral Large 2' },
-  { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B' },
-  { id: 'x-ai/grok-2-1212', name: 'Grok 2' },
-];
-
 export default function Header({
   currentModel,
-  models,
   onModelChange,
   onGenerateSummary,
   isGenerating,
   lastUpdated,
 }: HeaderProps) {
-  const displayModels = models.length > 0 ? models : FALLBACK_MODELS;
   return (
     <header
       className="fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between"
@@ -109,18 +87,14 @@ export default function Header({
           {isGenerating ? 'Generating…' : 'Generate Summary'}
         </button>
 
-        {/* Model selector */}
-        <select
+        {/* Model input */}
+        <input
+          type="text"
           value={currentModel}
           onChange={(e) => onModelChange(e.target.value)}
-          className="text-sm bg-gray-800 text-gray-200 border border-gray-700 rounded-md px-2 py-1.5 outline-none focus:border-blue-500 transition-colors cursor-pointer"
-        >
-          {displayModels.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.name}
-            </option>
-          ))}
-        </select>
+          placeholder="e.g. openai/gpt-4o"
+          className="text-sm bg-gray-800 text-gray-200 border border-gray-700 rounded-md px-2 py-1.5 outline-none focus:border-blue-500 transition-colors w-48"
+        />
       </div>
     </header>
   );
