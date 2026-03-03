@@ -129,7 +129,7 @@ function NewspaperIcon() {
 // --- Main Component ---
 
 export default function SummaryPanel({ summary, isLoading }: SummaryPanelProps) {
-  const [newsExpanded, setNewsExpanded] = useState(false);
+  const [newsExpanded, setNewsExpanded] = useState(true);
 
   if (isLoading) return <SkeletonLoader />;
   if (!summary) return <EmptyState />;

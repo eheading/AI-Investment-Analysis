@@ -2,33 +2,55 @@
 
 SYSTEM_PROMPT = (
     "You are a senior financial analyst AI with deep expertise in global equity markets, "
-    "macroeconomics, and quantitative analysis. You provide objective, data-driven insights. "
+    "commodities, currencies, macroeconomics, and quantitative analysis. "
+    "You provide objective, data-driven insights. "
     "Always cite specific data points to support your reasoning. "
     "When uncertain, clearly state your confidence level and the assumptions you are making. "
-    "Never fabricate statistics or price targets."
+    "Never fabricate statistics or price targets. "
+    "If you have the ability to search the internet for real-time information, please do so "
+    "to supplement your analysis with the latest market developments, earnings reports, "
+    "and breaking news."
 )
 
 MARKET_ANALYSIS_TEMPLATE = """\
-Analyze the following market data and recent news. Provide a structured report with these sections:
+Analyze the following market data and recent news. Provide a structured report with \
+EXACTLY these four sections, using the exact section headers shown below.
 
-## A) Market Summary
-Provide a concise global overview of current market conditions, key index movements, \
-and prevailing sentiment.
+## MARKET_SUMMARY
+Provide a concise global overview of current market conditions across all regions \
+(US, Europe, Asia, emerging markets). Cover key index movements, commodities, currencies, \
+crypto, and prevailing sentiment. Identify the main themes driving markets today.
 
-## B) Key News Highlights
-List the most market-moving news items and explain their potential impact.
+## NEWS_DIGEST
+For each major news story (at least 5-8 items):
+- **Headline summary**: What happened
+- **Market impact**: How it affects markets, which sectors/assets are impacted
+- **Related tickers**: Specific stocks or assets affected
+Include analysis of industry trends, sector rotations, and any breaking developments. \
+If you can search online, include the very latest news beyond what is provided.
 
-## C) Recommendations
-For each relevant symbol, provide a recommendation in exactly this format:
+## RECOMMENDATIONS
+Provide at least 8-12 actionable recommendations. Include:
+- Stocks/ETFs from the provided market data that have clear signals
+- NEW stock picks based on news themes and industry analysis (not limited to the data provided)
+- Global opportunities across US, European, Asian markets and commodities
+
+For EACH recommendation, use EXACTLY this pipe-delimited format on its own line:
 SYMBOL | ACTION | Reasoning | Confidence
 
-- SYMBOL: the ticker symbol
-- ACTION: one of BUY, SELL, or HOLD
-- Reasoning: a brief explanation (1-2 sentences)
-- Confidence: an integer from 1 (lowest) to 10 (highest)
+- SYMBOL: the ticker symbol (e.g., AAPL, NVDA, 0700.HK, VOW3.DE, BTC-USD)
+- ACTION: exactly one of BUY, SELL, or HOLD
+- Reasoning: 1-2 sentences explaining why, referencing specific news or data
+- Confidence: integer from 1 (lowest) to 10 (highest)
 
-## D) Risk Warnings
-Highlight key risks, upcoming events, or uncertainties that could invalidate the analysis.
+Example lines:
+NVDA | BUY | AI infrastructure spending continues to accelerate based on cloud earnings. | 8
+XOM | SELL | Oil demand outlook weakening as OPEC+ signals production increase. | 6
+GC=F | HOLD | Gold consolidating near highs; wait for clearer Fed signal. | 5
+
+## RISK_WARNINGS
+Highlight key risks, upcoming events (earnings, Fed meetings, economic data releases), \
+or uncertainties that could invalidate the analysis.
 
 ---
 ### Market Data

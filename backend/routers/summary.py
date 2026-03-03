@@ -1,4 +1,5 @@
 import json
+import re
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,107 @@ from database import get_db, AISummary, PriceSnapshot, NewsArticle, Setting
 from ai.openrouter import OpenRouterClient
 
 router = APIRouter(prefix="/summaries", tags=["summaries"])
+
+
+def _parse_recommendations(text: str) -> list:
+    """Parse SYMBOL | ACTION | Reasoning | Confidence lines into structured list."""
+    recs = []
+    for line in text.split('\n'):
+        line = line.strip().lstrip('- ').lstrip('* ')
+        parts = [p.strip() for p in line.split('|')]
+        if len(parts) >= 4:
+            symbol = parts[0].strip('*').strip()
+            action = parts[1].strip().upper()
+            if action not in ('BUY', 'SELL', 'HOLD'):
+                continue
+            reasoning = parts[2].strip()
+            try:
+                confidence = int(re.search(r'\d+', parts[3]).group())
+            except (AttributeError, ValueError):
+                confidence = 5
+            confidence = max(1, min(10, confidence))
+            if symbol and reasoning:
+                recs.append({
+                    "symbol": symbol,
+                    "action": action,
+                    "reasoning": reasoning,
+                    "confidence": confidence,
+                })
+    return recs
+
+
+def _parse_ai_response(text: str) -> dict:
+    """Split the AI response into market_summary, news_digest, recommendations, risk_warnings."""
+    sections = {
+        'market_summary': '',
+        'news_digest': '',
+        'recommendations_raw': '',
+        'risk_warnings': '',
+    }
+
+    # Try to split by section headers
+    patterns = [
+        (r'##\s*MARKET_SUMMARY[^\n]*', 'market_summary'),
+        (r'##\s*NEWS_DIGEST[^\n]*', 'news_digest'),
+        (r'##\s*RECOMMENDATIONS[^\n]*', 'recommendations_raw'),
+        (r'##\s*RISK_WARNINGS[^\n]*', 'risk_warnings'),
+    ]
+
+    # Find all section positions
+    positions = []
+    for pattern, key in patterns:
+        m = re.search(pattern, text, re.IGNORECASE)
+        if m:
+            positions.append((m.start(), m.end(), key))
+
+    if len(positions) >= 2:
+        # Sort by position
+        positions.sort(key=lambda x: x[0])
+        for i, (start, header_end, key) in enumerate(positions):
+            if i + 1 < len(positions):
+                content = text[header_end:positions[i + 1][0]]
+            else:
+                content = text[header_end:]
+            sections[key] = content.strip()
+    else:
+        # Fallback: try old-style headers (A), B), etc.)
+        old_patterns = [
+            (r'##\s*[A-D]\)\s*Market\s*Summary[^\n]*', 'market_summary'),
+            (r'##\s*[A-D]\)\s*(?:Key\s*)?News[^\n]*', 'news_digest'),
+            (r'##\s*[A-D]\)\s*Recommendations[^\n]*', 'recommendations_raw'),
+            (r'##\s*[A-D]\)\s*Risk[^\n]*', 'risk_warnings'),
+        ]
+        positions = []
+        for pattern, key in old_patterns:
+            m = re.search(pattern, text, re.IGNORECASE)
+            if m:
+                positions.append((m.start(), m.end(), key))
+
+        if len(positions) >= 2:
+            positions.sort(key=lambda x: x[0])
+            for i, (start, header_end, key) in enumerate(positions):
+                if i + 1 < len(positions):
+                    content = text[header_end:positions[i + 1][0]]
+                else:
+                    content = text[header_end:]
+                sections[key] = content.strip()
+        else:
+            # Can't parse sections — put everything in market_summary
+            sections['market_summary'] = text
+
+    # Parse recommendations into structured format
+    recs = _parse_recommendations(sections['recommendations_raw'])
+
+    # Combine market summary with risk warnings
+    market_summary = sections['market_summary']
+    if sections['risk_warnings']:
+        market_summary += '\n\n## Risk Warnings\n' + sections['risk_warnings']
+
+    return {
+        'market_summary': market_summary,
+        'news_digest': sections['news_digest'],
+        'recommendations': recs,
+    }
 
 
 def _serialize_summary(s: AISummary) -> dict:
@@ -122,12 +224,15 @@ async def generate_summary(session: AsyncSession = Depends(get_db)):
     finally:
         await client.close()
 
+    # Parse AI response into sections
+    parsed = _parse_ai_response(analysis)
+
     # Persist summary
     ai_summary = AISummary(
         model_used=model or client._default_model,
-        market_summary=analysis,
-        recommendations=None,
-        news_digest=None,
+        market_summary=parsed['market_summary'],
+        recommendations=json.dumps(parsed['recommendations']) if parsed['recommendations'] else None,
+        news_digest=parsed['news_digest'] or None,
     )
     session.add(ai_summary)
     await session.commit()
