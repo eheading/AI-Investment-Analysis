@@ -79,6 +79,20 @@ export default function Home() {
 
   const [error, setError] = useState<string | null>(null);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.allSettled([api.refreshPrices(), api.refreshNews()]);
+      const results = await Promise.allSettled([api.getMarketPrices(), api.getNews()]);
+      if (results[0].status === 'fulfilled') setPrices(results[0].value);
+      if (results[1].status === 'fulfilled') setArticles(results[1].value);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleGenerateSummary = async () => {
     setIsGenerating(true);
     setError(null);
@@ -120,7 +134,7 @@ export default function Home() {
 
       <main className="mx-auto max-w-7xl px-4 pt-20 pb-12 sm:px-6 lg:px-8">
         {/* Tab navigation */}
-        <nav className="mb-8 flex flex-wrap gap-2">
+        <nav className="mb-8 flex flex-wrap items-center gap-2">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -134,6 +148,22 @@ export default function Home() {
               {tab.label}
             </button>
           ))}
+          <button
+            onClick={handleRefreshData}
+            disabled={isRefreshing}
+            className="ml-auto flex items-center gap-2 rounded-full bg-[#1e1e2e] px-4 py-2 text-sm font-medium text-gray-300 hover:bg-[#2a2a3e] hover:text-white transition-colors disabled:opacity-50"
+          >
+            <svg
+              className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182M20.015 4.356v4.992" />
+            </svg>
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </button>
         </nav>
 
         {/* Error toast */}

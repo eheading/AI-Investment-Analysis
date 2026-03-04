@@ -16,16 +16,40 @@ from database import NewsArticle
 logger = logging.getLogger(__name__)
 
 RSS_FEEDS = [
+    # --- US Major ---
     {"name": "Reuters Business", "url": "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"},
     {"name": "CNBC Top News", "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114"},
     {"name": "CNBC World", "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100727362"},
+    {"name": "CNBC Earnings", "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839135"},
     {"name": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex"},
     {"name": "MarketWatch Top Stories", "url": "https://feeds.marketwatch.com/marketwatch/topstories/"},
     {"name": "MarketWatch Markets", "url": "https://feeds.marketwatch.com/marketwatch/marketpulse/"},
+    {"name": "MarketWatch Stocks", "url": "https://feeds.marketwatch.com/marketwatch/StockstoWatch/"},
     {"name": "Investing.com News", "url": "https://www.investing.com/rss/news.rss"},
+    {"name": "Investing.com Commodities", "url": "https://www.investing.com/rss/news_14.rss"},
+    {"name": "Investing.com Forex", "url": "https://www.investing.com/rss/news_1.rss"},
+    {"name": "Investing.com Crypto", "url": "https://www.investing.com/rss/news_301.rss"},
     {"name": "Financial Times", "url": "https://www.ft.com/rss/home"},
     {"name": "Bloomberg Markets", "url": "https://feeds.bloomberg.com/markets/news.rss"},
+    {"name": "Barrons", "url": "https://www.barrons.com/feed"},
+    {"name": "Seeking Alpha Market News", "url": "https://seekingalpha.com/market_currents.xml"},
+    {"name": "Seeking Alpha Top Ideas", "url": "https://seekingalpha.com/tag/top-ideas.xml"},
+    # --- Google News Finance ---
     {"name": "Google Finance News", "url": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Business", "url": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB?hl=en&gl=GB&ceid=GB:en"},
+    # --- Europe ---
+    {"name": "ECB Press", "url": "https://www.ecb.europa.eu/rss/press.html"},
+    {"name": "BBC Business", "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
+    {"name": "Guardian Business", "url": "https://www.theguardian.com/uk/business/rss"},
+    # --- Asia ---
+    {"name": "Nikkei Asia", "url": "https://asia.nikkei.com/rss/feed/nar"},
+    {"name": "SCMP Business", "url": "https://www.scmp.com/rss/91/feed"},
+    {"name": "CNA Business", "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511"},
+    {"name": "ET Markets", "url": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"},
+    # --- Commodities & Crypto ---
+    {"name": "CoinDesk", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"},
+    {"name": "CoinTelegraph", "url": "https://cointelegraph.com/rss"},
+    {"name": "Oil Price", "url": "https://oilprice.com/rss/main"},
 ]
 
 HEADERS = {
