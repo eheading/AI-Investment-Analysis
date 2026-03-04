@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ChartModal from './ChartModal';
+import TranslateToggle from './TranslateToggle';
 
 export interface Recommendation {
   symbol: string;
@@ -24,11 +25,25 @@ function confidenceColor(confidence: number): string {
 
 export default function Recommendations({ recommendations }: { recommendations: Recommendation[] }) {
   const [chartSymbol, setChartSymbol] = useState<string | null>(null);
+  const [translatedMap, setTranslatedMap] = useState<Record<string, string>>({});
+  const [isTranslated, setIsTranslated] = useState(false);
   const sorted = [...recommendations].sort((a, b) => b.confidence - a.confidence);
 
   const buyCount = recommendations.filter((r) => r.action === 'BUY').length;
   const sellCount = recommendations.filter((r) => r.action === 'SELL').length;
   const holdCount = recommendations.filter((r) => r.action === 'HOLD').length;
+
+  const allReasoning = recommendations.map((r) => `[${r.symbol}] ${r.reasoning}`).join('\n');
+
+  const handleTranslated = (text: string) => {
+    const map: Record<string, string> = {};
+    text.split('\n').forEach((line) => {
+      const match = line.match(/^\[([^\]]+)\]\s*(.+)$/);
+      if (match) map[match[1]] = match[2];
+    });
+    setTranslatedMap(map);
+    setIsTranslated(true);
+  };
 
   return (
     <section>
@@ -38,6 +53,14 @@ export default function Recommendations({ recommendations }: { recommendations: 
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 13h2v8H3zm6-4h2v12H9zm6-6h2v18h-2zm6 10h2v8h-2z" />
         </svg>
         <h2 className="text-xl font-bold text-white">AI Recommendations</h2>
+        <div className="ml-auto">
+          <TranslateToggle
+            originalText={allReasoning}
+            onTranslated={handleTranslated}
+            onRestore={() => { setTranslatedMap({}); setIsTranslated(false); }}
+            isTranslated={isTranslated}
+          />
+        </div>
       </div>
 
       {/* Summary stats */}
@@ -86,7 +109,7 @@ export default function Recommendations({ recommendations }: { recommendations: 
               </div>
 
               {/* Reasoning */}
-              <p className="text-sm text-gray-400">{rec.reasoning}</p>
+              <p className="text-sm text-gray-400">{translatedMap[rec.symbol] || rec.reasoning}</p>
               <p className="text-xs text-indigo-400 mt-2">Click to view chart →</p>
             </div>
           ))}

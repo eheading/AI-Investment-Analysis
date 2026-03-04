@@ -100,4 +100,24 @@ export const api = {
       clearTimeout(timeout);
     }
   },
+  translateText: async (text: string, target: 'zh' | 'en'): Promise<string> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 180_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, target }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      const data = await res.json();
+      return data.translated;
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
 };

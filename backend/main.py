@@ -9,6 +9,7 @@ from routers.news import router as news_router
 from routers.summary import router as summary_router
 from routers.settings import router as settings_router
 from routers.active_stocks import router as active_stocks_router
+from routers.translate import router as translate_router
 
 
 @asynccontextmanager
@@ -36,6 +37,7 @@ app.include_router(news_router, prefix="/api")
 app.include_router(summary_router, prefix="/api")
 app.include_router(settings_router, prefix="/api")
 app.include_router(active_stocks_router, prefix="/api")
+app.include_router(translate_router, prefix="/api")
 
 
 @app.get("/api/health")

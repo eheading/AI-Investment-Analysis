@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import TranslateToggle from './TranslateToggle';
 
 export interface Recommendation {
   symbol: string;
@@ -130,6 +131,8 @@ function NewspaperIcon() {
 
 export default function SummaryPanel({ summary, isLoading }: SummaryPanelProps) {
   const [newsExpanded, setNewsExpanded] = useState(true);
+  const [translatedSummary, setTranslatedSummary] = useState<string | null>(null);
+  const [translatedNews, setTranslatedNews] = useState<string | null>(null);
 
   if (isLoading) return <SkeletonLoader />;
   if (!summary) return <EmptyState />;
@@ -151,11 +154,19 @@ export default function SummaryPanel({ summary, isLoading }: SummaryPanelProps) 
 
       {/* Market Summary */}
       <section>
-        <SectionTitle icon={<ChartIcon />}>Market Summary</SectionTitle>
+        <div className="flex items-center justify-between mb-3">
+          <SectionTitle icon={<ChartIcon />}>Market Summary</SectionTitle>
+          <TranslateToggle
+            originalText={summary.market_summary}
+            onTranslated={(t) => setTranslatedSummary(t)}
+            onRestore={() => setTranslatedSummary(null)}
+            isTranslated={translatedSummary !== null}
+          />
+        </div>
         <div className="rounded-lg bg-[#111118] p-5">
           <div
             className="prose-sm text-gray-300 leading-relaxed [&_strong]:text-white [&_li]:my-1 [&_p]:my-1.5 [&_p:first-child]:mt-0"
-            dangerouslySetInnerHTML={{ __html: formatMarkdown(summary.market_summary) }}
+            dangerouslySetInnerHTML={{ __html: formatMarkdown(translatedSummary ?? summary.market_summary) }}
           />
         </div>
       </section>
@@ -170,21 +181,31 @@ export default function SummaryPanel({ summary, isLoading }: SummaryPanelProps) 
           className="flex w-full items-center justify-between text-left"
         >
           <SectionTitle icon={<NewspaperIcon />}>News Digest</SectionTitle>
-          <svg
-            className={`h-4 w-4 text-gray-500 transition-transform ${newsExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-          </svg>
+          <div className="flex items-center gap-2">
+            <div onClick={(e) => e.stopPropagation()}>
+              <TranslateToggle
+                originalText={summary.news_digest}
+                onTranslated={(t) => setTranslatedNews(t)}
+                onRestore={() => setTranslatedNews(null)}
+                isTranslated={translatedNews !== null}
+              />
+            </div>
+            <svg
+              className={`h-4 w-4 text-gray-500 transition-transform ${newsExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
         </button>
         {newsExpanded && (
           <div className="mt-2 rounded-lg bg-[#111118] p-5">
             <div
               className="prose-sm text-gray-300 leading-relaxed [&_strong]:text-white [&_li]:my-1 [&_p]:my-1.5 [&_p:first-child]:mt-0"
-              dangerouslySetInnerHTML={{ __html: formatMarkdown(summary.news_digest) }}
+              dangerouslySetInnerHTML={{ __html: formatMarkdown(translatedNews ?? summary.news_digest) }}
             />
           </div>
         )}
