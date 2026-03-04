@@ -115,6 +115,14 @@ export default function Home() {
     setCurrentModel(modelId);
   };
 
+  const handleModelConfirm = async (modelId: string) => {
+    try {
+      await api.setModel(modelId);
+    } catch {
+      // ignore save errors
+    }
+  };
+
   const lastUpdated = summary?.created_at
     ? new Date(summary.created_at).toLocaleString('en-US', {
         month: 'short',
@@ -129,6 +137,7 @@ export default function Home() {
       <Header
         currentModel={currentModel}
         onModelChange={handleModelChange}
+        onModelConfirm={handleModelConfirm}
         onGenerateSummary={handleGenerateSummary}
         isGenerating={isGenerating}
         lastUpdated={lastUpdated}
@@ -176,14 +185,20 @@ export default function Home() {
           </div>
         )}
 
-        {/* Tab content */}
-        {activeTab === 'overview' && <MarketOverview prices={prices} />}
+        {/* Tab content — all rendered, visibility toggled to preserve state */}
+        <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
+          <MarketOverview prices={prices} />
+        </div>
 
-        {activeTab === 'news' && <NewsFeed articles={articles} />}
+        <div style={{ display: activeTab === 'news' ? 'block' : 'none' }}>
+          <NewsFeed articles={articles} />
+        </div>
 
-        {activeTab === 'active' && <ActiveStocks />}
+        <div style={{ display: activeTab === 'active' ? 'block' : 'none' }}>
+          <ActiveStocks />
+        </div>
 
-        {activeTab === 'analysis' && (
+        <div style={{ display: activeTab === 'analysis' ? 'block' : 'none' }}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-[#1e1e2e] bg-[#0d0d15]">
               <SummaryPanel summary={summary} isLoading={isLoading} />
@@ -192,7 +207,7 @@ export default function Home() {
               <Recommendations recommendations={summary?.recommendations ?? []} />
             </div>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

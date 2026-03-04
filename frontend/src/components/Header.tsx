@@ -5,6 +5,7 @@ import React from 'react';
 interface HeaderProps {
   currentModel: string;
   onModelChange: (modelId: string) => void;
+  onModelConfirm: (modelId: string) => void;
   onGenerateSummary: () => void;
   isGenerating: boolean;
   lastUpdated: string | null;
@@ -13,10 +14,20 @@ interface HeaderProps {
 export default function Header({
   currentModel,
   onModelChange,
+  onModelConfirm,
   onGenerateSummary,
   isGenerating,
   lastUpdated,
 }: HeaderProps) {
+  const [saved, setSaved] = React.useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onModelConfirm(currentModel);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
   return (
     <header
       className="fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between"
@@ -88,13 +99,19 @@ export default function Header({
         </button>
 
         {/* Model input */}
-        <input
-          type="text"
-          value={currentModel}
-          onChange={(e) => onModelChange(e.target.value)}
-          placeholder="e.g. openai/gpt-4o"
-          className="text-sm bg-gray-800 text-gray-200 border border-gray-700 rounded-md px-2 py-1.5 outline-none focus:border-blue-500 transition-colors w-48"
-        />
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            value={currentModel}
+            onChange={(e) => onModelChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="e.g. openai/gpt-4o"
+            className="text-sm bg-gray-800 text-gray-200 border border-gray-700 rounded-md px-2 py-1.5 outline-none focus:border-blue-500 transition-colors w-48"
+          />
+          {saved && (
+            <span className="absolute -bottom-5 right-0 text-xs text-green-400">✓ Model saved</span>
+          )}
+        </div>
       </div>
     </header>
   );
