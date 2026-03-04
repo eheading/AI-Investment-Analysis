@@ -25,7 +25,7 @@ class OpenRouterClient:
         settings = get_settings()
         self._api_key = api_key or settings.openrouter_api_key
         self._default_model = default_model or settings.openrouter_model
-        self._client = httpx.AsyncClient(base_url=_BASE_URL, timeout=60.0)
+        self._client = httpx.AsyncClient(base_url=_BASE_URL, timeout=180.0)
         self._models_cache: list[dict[str, Any]] | None = None
         self._models_cache_ts: float = 0.0
 

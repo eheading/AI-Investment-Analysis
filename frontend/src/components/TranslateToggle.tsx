@@ -21,9 +21,10 @@ export default function TranslateToggle({ originalText, onTranslated, onRestore,
     setLoading(true);
     try {
       const translated = await api.translateText(originalText, 'zh');
+      console.log('Translation received:', translated?.substring(0, 100));
       onTranslated(translated);
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Translation failed:', err);
     } finally {
       setLoading(false);
     }

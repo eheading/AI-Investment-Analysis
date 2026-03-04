@@ -5,7 +5,8 @@ from typing import Optional
 
 import httpx
 from bs4 import BeautifulSoup
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from ai.openrouter import OpenRouterClient
@@ -13,7 +14,6 @@ from config import get_settings
 from database import get_db, Setting
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,8 @@ HEADERS = {
                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
 }
 
 
@@ -97,7 +99,10 @@ async def get_active_stocks(market: str):
         stocks = await _scrape_active(market)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Failed to fetch data: {exc}")
-    return {"market": market.upper(), "stocks": stocks}
+    return JSONResponse(
+        content={"market": market.upper(), "stocks": stocks},
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 class AnalyzeRequest(BaseModel):

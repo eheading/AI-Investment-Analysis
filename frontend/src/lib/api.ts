@@ -6,6 +6,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
+    cache: 'no-store',
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -61,7 +62,7 @@ export const api = {
       `/market/prices/${encodeURIComponent(symbol)}`
     ),
   getActiveStocks: (market: string) =>
-    fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/active-stocks/${market}`),
+    fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/active-stocks/${market}?_t=${Date.now()}`),
   analyzeActiveStocks: async (market: string, symbols?: string[]): Promise<ActiveStocksAnalysis> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min timeout
