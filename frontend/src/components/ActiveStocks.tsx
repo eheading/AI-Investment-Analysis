@@ -207,10 +207,10 @@ export default function ActiveStocks() {
                     <td className="px-4 py-3 font-semibold text-white">{stock.symbol}</td>
                     <td className="px-4 py-3 text-gray-300 max-w-[200px] truncate">{stock.name}</td>
                     <td className="px-4 py-3 text-right text-white font-medium">{stock.price}</td>
-                    <td className={`px-4 py-3 text-right font-medium ${changeColor(stock.change)}`}>
+                    <td className={`px-4 py-3 text-right font-medium ${changeColor(stock.change_pct)}`}>
                       {stock.change}
                     </td>
-                    <td className={`px-4 py-3 text-right font-medium ${changeColor(stock.change)}`}>
+                    <td className={`px-4 py-3 text-right font-medium ${changeColor(stock.change_pct)}`}>
                       {stock.change_pct}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-300">{stock.volume}</td>
