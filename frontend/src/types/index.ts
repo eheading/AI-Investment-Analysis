@@ -37,6 +37,23 @@ export interface Recommendation {
   confidence: number;
 }
 
+export interface ActiveStock {
+  symbol: string;
+  name: string;
+  price: string;
+  change: string;
+  change_pct: string;
+  volume: string;
+  market_cap: string;
+}
+
+export interface ActiveStocksAnalysis {
+  market: string;
+  stocks: ActiveStock[];
+  analysis: string;
+  model_used: string;
+}
+
 export interface ModelInfo {
   id: string;
   name: string;

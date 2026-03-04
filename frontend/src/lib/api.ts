@@ -1,4 +1,4 @@
-import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo } from '../types';
+import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo, ActiveStock, ActiveStocksAnalysis } from '../types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -60,4 +60,25 @@ export const api = {
     fetchAPI<{ symbol: string; name: string; price: number; change_pct: number; fetched_at: string }[]>(
       `/market/prices/${encodeURIComponent(symbol)}`
     ),
+  getActiveStocks: (market: string) =>
+    fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/active-stocks/${market}`),
+  analyzeActiveStocks: async (market: string, symbols?: string[]): Promise<ActiveStocksAnalysis> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min timeout
+    try {
+      const res = await fetch('http://localhost:8000/api/active-stocks/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market, symbols }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
 };

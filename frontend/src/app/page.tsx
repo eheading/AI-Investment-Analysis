@@ -8,12 +8,14 @@ import MarketOverview from '@/components/MarketOverview';
 import NewsFeed from '@/components/NewsFeed';
 import SummaryPanel from '@/components/SummaryPanel';
 import Recommendations from '@/components/Recommendations';
+import ActiveStocks from '@/components/ActiveStocks';
 
-type Tab = 'overview' | 'news' | 'analysis';
+type Tab = 'overview' | 'news' | 'active' | 'analysis';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Market Overview' },
   { key: 'news', label: 'News Feed' },
+  { key: 'active', label: 'Active Stocks' },
   { key: 'analysis', label: 'AI Analysis' },
 ];
 
@@ -178,6 +180,8 @@ export default function Home() {
         {activeTab === 'overview' && <MarketOverview prices={prices} />}
 
         {activeTab === 'news' && <NewsFeed articles={articles} />}
+
+        {activeTab === 'active' && <ActiveStocks />}
 
         {activeTab === 'analysis' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
