@@ -25,7 +25,7 @@ class OpenRouterClient:
         settings = get_settings()
         self._api_key = api_key or settings.openrouter_api_key
         self._default_model = default_model or settings.openrouter_model
-        self._client = httpx.AsyncClient(base_url=_BASE_URL, timeout=180.0)
+        self._client = httpx.AsyncClient(base_url=_BASE_URL, timeout=600.0)
         self._models_cache: list[dict[str, Any]] | None = None
         self._models_cache_ts: float = 0.0
 
@@ -89,7 +89,7 @@ class OpenRouterClient:
         messages: list[dict[str, str]],
         model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 4000,
+        max_tokens: int = 40000,
         *,
         _max_retries: int = 3,
     ) -> str:
@@ -159,4 +159,4 @@ class OpenRouterClient:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content},
         ]
-        return await self.chat_completion(messages, model=model, temperature=0.4, max_tokens=4000)
+        return await self.chat_completion(messages, model=model, temperature=0.4, max_tokens=40000)

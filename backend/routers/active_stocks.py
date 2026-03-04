@@ -171,7 +171,7 @@ Format your response in clear markdown with headers for each stock."""
             ],
             model=model,
             temperature=0.4,
-            max_tokens=4000,
+            max_tokens=40000,
         )
     except Exception as exc:
         await client.close()
@@ -261,7 +261,7 @@ Format your response in clear markdown. Use tables where helpful."""
             ],
             model=model,
             temperature=0.4,
-            max_tokens=4000,
+            max_tokens=40000,
         )
     except Exception as exc:
         await client.close()

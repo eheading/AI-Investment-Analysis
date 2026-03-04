@@ -63,7 +63,7 @@ async def translate_text(req: TranslateRequest, session: AsyncSession = Depends(
             ],
             model=model,
             temperature=0.2,
-            max_tokens=4000,
+            max_tokens=40000,
         )
     except Exception as exc:
         await client.close()

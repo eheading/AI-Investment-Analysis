@@ -31,7 +31,7 @@ export const api = {
   },
   generateSummary: async (): Promise<AISummary> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min timeout
+    const timeout = setTimeout(() => controller.abort(), 600_000); // 10 min timeout
     try {
       const res = await fetch('http://localhost:8000/api/summaries/generate', {
         method: 'POST',
@@ -65,7 +65,7 @@ export const api = {
     fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/active-stocks/${market}?_t=${Date.now()}`),
   analyzeActiveStocks: async (market: string, symbols?: string[]): Promise<ActiveStocksAnalysis> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min timeout
+    const timeout = setTimeout(() => controller.abort(), 600_000); // 10 min timeout
     try {
       const res = await fetch('http://localhost:8000/api/active-stocks/analyze', {
         method: 'POST',
@@ -84,7 +84,7 @@ export const api = {
   },
   analyzeMoneyFlow: async (market: string): Promise<{ market: string; analysis: string; model_used: string }> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180_000);
+    const timeout = setTimeout(() => controller.abort(), 600_000);
     try {
       const res = await fetch('http://localhost:8000/api/active-stocks/money-flow', {
         method: 'POST',
@@ -103,7 +103,7 @@ export const api = {
   },
   translateText: async (text: string, target: 'zh' | 'en'): Promise<string> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180_000);
+    const timeout = setTimeout(() => controller.abort(), 600_000);
     try {
       const res = await fetch('http://localhost:8000/api/translate', {
         method: 'POST',
