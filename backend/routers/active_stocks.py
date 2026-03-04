@@ -180,3 +180,92 @@ Format your response in clear markdown with headers for each stock."""
         "analysis": analysis,
         "model_used": model or client._default_model,
     }
+
+
+class MoneyFlowRequest(BaseModel):
+    market: str
+
+
+@router.post("/money-flow")
+async def analyze_money_flow(req: MoneyFlowRequest, session: AsyncSession = Depends(get_db)):
+    """Analyse sector money flow from most-active stocks."""
+    settings = get_settings()
+    if not settings.openrouter_api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="OpenRouter API key not configured. Please set OPENROUTER_API_KEY in .env file.",
+        )
+
+    try:
+        stocks = await _scrape_active(req.market)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch data: {exc}")
+
+    if not stocks:
+        raise HTTPException(status_code=404, detail="No active stocks data found.")
+
+    stock_lines = "\n".join(
+        f"- {s['symbol']} ({s['name']}): Change={s['change']} ({s['change_pct']}), "
+        f"Volume={s['volume']}, MarketCap={s['market_cap']}"
+        for s in stocks
+    )
+
+    prompt = f"""You are a senior financial analyst specialising in money flow and sector rotation analysis.
+
+Below are the most-active stocks from the {req.market.upper()} market today:
+
+{stock_lines}
+
+Based on these active stocks, perform the following analysis:
+
+## 1. Sector Classification
+Classify each stock into its industry sector (e.g., Technology, Healthcare, Energy, Finance, Consumer Discretionary, Industrials, etc.).
+
+## 2. Money Flow Analysis
+Analyse the overall money flow pattern:
+- Which sectors are seeing **net inflows** (money flowing IN) — based on positive price changes and high volume?
+- Which sectors are seeing **net outflows** (money flowing OUT) — based on negative price changes and high volume?
+
+## 3. Favoured Sectors (Money Flowing In)
+For each favoured sector:
+- Explain WHY money is flowing into this sector (macro trends, news catalysts, earnings).
+- Suggest **3-5 additional stock symbols** in that sector that investors should watch or consider buying. Include a one-line reason for each suggestion.
+
+## 4. Avoided Sectors (Money Flowing Out)
+For each avoided sector:
+- Explain WHY money is flowing out (headwinds, negative catalysts, sector rotation).
+- Suggest **3-5 stock symbols** in that sector that are most at risk or could be short candidates. Include a one-line reason for each.
+
+## 5. Overall Money Flow Summary
+Provide a brief overall conclusion on where smart money is rotating to and from, and any actionable insights.
+
+Format your response in clear markdown. Use tables where helpful."""
+
+    model_row = await session.execute(
+        select(Setting).where(Setting.key == "openrouter_model")
+    )
+    row = model_row.scalars().first()
+    model = row.value if row and row.value else None
+
+    client = OpenRouterClient()
+    try:
+        analysis = await client.chat_completion(
+            messages=[
+                {"role": "system", "content": "You are a senior financial analyst specialising in institutional money flow and sector rotation. Provide data-driven, actionable analysis with specific stock symbols."},
+                {"role": "user", "content": prompt},
+            ],
+            model=model,
+            temperature=0.4,
+            max_tokens=4000,
+        )
+    except Exception as exc:
+        await client.close()
+        raise HTTPException(status_code=502, detail=f"AI money flow analysis failed: {exc}")
+    finally:
+        await client.close()
+
+    return {
+        "market": req.market.upper(),
+        "analysis": analysis,
+        "model_used": model or client._default_model,
+    }

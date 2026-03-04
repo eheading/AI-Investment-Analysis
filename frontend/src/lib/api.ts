@@ -81,4 +81,23 @@ export const api = {
       clearTimeout(timeout);
     }
   },
+  analyzeMoneyFlow: async (market: string): Promise<{ market: string; analysis: string; model_used: string }> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 180_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/active-stocks/money-flow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
 };
