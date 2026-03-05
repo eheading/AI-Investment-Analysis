@@ -9,13 +9,15 @@ import NewsFeed from '@/components/NewsFeed';
 import SummaryPanel from '@/components/SummaryPanel';
 import Recommendations from '@/components/Recommendations';
 import ActiveStocks from '@/components/ActiveStocks';
+import TopGainers from '@/components/TopGainers';
 
-type Tab = 'overview' | 'news' | 'active' | 'analysis';
+type Tab = 'overview' | 'news' | 'active' | 'gainers' | 'analysis';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Market Overview' },
   { key: 'news', label: 'News Feed' },
   { key: 'active', label: 'Active Stocks' },
+  { key: 'gainers', label: 'Top Gainers' },
   { key: 'analysis', label: 'AI Analysis' },
 ];
 
@@ -197,6 +199,10 @@ export default function Home() {
 
         <div style={{ display: activeTab === 'active' ? 'block' : 'none' }}>
           <ActiveStocks />
+        </div>
+
+        <div style={{ display: activeTab === 'gainers' ? 'block' : 'none' }}>
+          <TopGainers />
         </div>
 
         <div style={{ display: activeTab === 'analysis' ? 'block' : 'none' }}>
