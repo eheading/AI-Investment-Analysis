@@ -59,6 +59,7 @@ export default function Story({ visible }: { visible?: boolean }) {
 
   // Analysis
   const [period, setPeriod] = useState<Period>('1m');
+  const [analyseSource, setAnalyseSource] = useState<string>('');
   const [analysing, setAnalysing] = useState(false);
   const [trendAnalysis, setTrendAnalysis] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -117,7 +118,7 @@ export default function Story({ visible }: { visible?: boolean }) {
     setTranslatedTrend(null);
     setTrendSaved(false);
     try {
-      const data = await api.analyseStories(period, market);
+      const data = await api.analyseStories(period, market, analyseSource || undefined);
       setTrendAnalysis(data.analysis);
     } catch (e: unknown) {
       setAnalysisError(e instanceof Error ? e.message : 'Analysis failed');
@@ -243,6 +244,19 @@ export default function Story({ visible }: { visible?: boolean }) {
               {Object.entries(PERIOD_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
+            </select>
+            <select
+              value={analyseSource}
+              onChange={(e) => setAnalyseSource(e.target.value)}
+              className="rounded-lg border border-gray-700 bg-[#111118] px-3 py-2 text-sm text-gray-300 focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="">All Sources</option>
+              <option value="active_stocks_analysis">Active Stocks – AI Analysis</option>
+              <option value="active_stocks_money_flow">Active Stocks – Money Flow</option>
+              <option value="top_gainers_analysis">Top Gainers – AI Analysis</option>
+              <option value="top_gainers_money_flow">Top Gainers – Money Flow</option>
+              <option value="premarket_analysis">Pre-Market Analysis</option>
+              <option value="ai_market_analysis">AI Market Analysis</option>
             </select>
             <button
               onClick={handleAnalyse}

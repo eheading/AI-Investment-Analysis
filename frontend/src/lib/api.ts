@@ -194,14 +194,14 @@ export const api = {
     }
   },
 
-  analyseStories: async (period: string, market: string): Promise<{ analysis: string; stories_analysed: number }> => {
+  analyseStories: async (period: string, market: string, source?: string): Promise<{ analysis: string; stories_analysed: number }> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 600_000);
     try {
       const res = await fetch('http://localhost:8000/api/stories/analyse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period, market }),
+        body: JSON.stringify({ period, market, source: source || undefined }),
         signal: controller.signal,
       });
       if (!res.ok) {

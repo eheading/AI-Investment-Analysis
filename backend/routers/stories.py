@@ -31,6 +31,7 @@ class SaveStoryRequest(BaseModel):
 class AnalyseStoriesRequest(BaseModel):
     period: str  # "1w", "1m", "3m"
     market: str = "US"  # "US" or "HK"
+    source: Optional[str] = None  # filter by story source e.g. "active_stocks_analysis"
 
 
 # --- Endpoints ---
@@ -130,12 +131,15 @@ async def analyse_stories(req: AnalyseStoriesRequest, session: AsyncSession = De
 
     cutoff = datetime.utcnow() - timedelta(days=days)
 
-    result = await session.execute(
+    query = (
         select(SavedStory)
         .where(SavedStory.saved_at >= cutoff)
         .where(SavedStory.market == req.market)
-        .order_by(SavedStory.saved_at.asc())
+        .where(SavedStory.source != "trend_analysis")
     )
+    if req.source:
+        query = query.where(SavedStory.source == req.source)
+    result = await session.execute(query.order_by(SavedStory.saved_at.asc()))
     stories = result.scalars().all()
 
     if not stories:
