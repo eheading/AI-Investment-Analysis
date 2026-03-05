@@ -125,6 +125,7 @@ export default function Home() {
 
   const lastUpdated = summary?.created_at
     ? new Date(summary.created_at).toLocaleString('en-US', {
+        timeZone: 'Asia/Hong_Kong',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',

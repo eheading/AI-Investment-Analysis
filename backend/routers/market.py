@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 
 from database import get_db, PriceSnapshot
 from collectors.price_collector import collect_prices, get_latest_prices
+from tz import format_hkt
 
 router = APIRouter(prefix="/market", tags=["market"])
 
@@ -16,7 +17,7 @@ async def get_prices(session: AsyncSession = Depends(get_db)):
         {
             "id": p.id, "symbol": p.symbol, "name": p.name, "price": p.price,
             "change_pct": p.change_pct, "volume": p.volume, "market_cap": p.market_cap,
-            "category": p.category, "region": p.region, "fetched_at": str(p.fetched_at),
+            "category": p.category, "region": p.region, "fetched_at": format_hkt(p.fetched_at),
         }
         for p in prices
     ]
@@ -35,7 +36,7 @@ async def get_price_history(symbol: str, limit: int = 100, session: AsyncSession
     return [
         {
             "id": p.id, "symbol": p.symbol, "name": p.name, "price": p.price,
-            "change_pct": p.change_pct, "fetched_at": str(p.fetched_at),
+            "change_pct": p.change_pct, "fetched_at": format_hkt(p.fetched_at),
         }
         for p in prices
     ]

@@ -5,6 +5,7 @@ Falls back to yfinance-based market overview when scraping fails.
 
 import logging
 from datetime import datetime
+from tz import now_hkt
 
 import httpx
 from bs4 import BeautifulSoup
@@ -125,7 +126,7 @@ def get_market_overview_text() -> str:
     major indices and top movers (biggest gains and losses).
     """
     try:
-        lines: list[str] = [f"=== Market Overview ({datetime.now():%Y-%m-%d %H:%M UTC}) ===\n"]
+        lines: list[str] = [f"=== Market Overview ({now_hkt():%Y-%m-%d %H:%M} HKT) ===\n"]
 
         # --- Major indices ---
         indices = {

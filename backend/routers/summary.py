@@ -7,6 +7,7 @@ from sqlalchemy import select, func
 
 from database import get_db, AISummary, PriceSnapshot, NewsArticle, Setting
 from ai.openrouter import OpenRouterClient
+from tz import format_hkt
 
 router = APIRouter(prefix="/summaries", tags=["summaries"])
 
@@ -126,7 +127,7 @@ def _serialize_summary(s: AISummary) -> dict:
         "market_summary": s.market_summary,
         "recommendations": recommendations,
         "news_digest": s.news_digest,
-        "created_at": str(s.created_at),
+        "created_at": format_hkt(s.created_at),
     }
 
 

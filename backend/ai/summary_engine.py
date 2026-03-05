@@ -83,6 +83,9 @@ async def generate_summary(model: str = None) -> dict:
     logger.info("Step 7: Storing summary")
     summary_id = None
     created_at = datetime.utcnow()
+    # Note: created_at here is only a fallback; the DB-generated value
+    # (via func.now()) is used after commit+refresh. format_hkt() in the
+    # router handles UTC→HKT conversion for API responses.
     try:
         async with async_session() as session:
             summary_obj = AISummary(

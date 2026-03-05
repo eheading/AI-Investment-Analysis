@@ -44,6 +44,7 @@ function formatMarkdown(text: string | null | undefined): string {
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', {
+    timeZone: 'Asia/Hong_Kong',
     month: 'short',
     day: 'numeric',
     year: 'numeric',

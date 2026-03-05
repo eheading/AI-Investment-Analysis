@@ -6,6 +6,7 @@ from sqlalchemy import select, func
 
 from database import get_db, NewsArticle
 from collectors.rss_collector import RSS_FEEDS, collect_news
+from tz import format_hkt
 
 router = APIRouter(prefix="/news", tags=["news"])
 
@@ -42,8 +43,8 @@ async def list_news(
         "articles": [
             {
                 "id": a.id, "title": a.title, "summary": a.summary, "url": a.url,
-                "source": a.source, "published_at": str(a.published_at) if a.published_at else None,
-                "fetched_at": str(a.fetched_at),
+                "source": a.source, "published_at": format_hkt(a.published_at),
+                "fetched_at": format_hkt(a.fetched_at),
             }
             for a in articles
         ],
