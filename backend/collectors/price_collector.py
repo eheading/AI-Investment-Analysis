@@ -53,14 +53,18 @@ def _build_symbol_map() -> dict:
 
 
 def _fetch_batch_prices() -> list[dict]:
-    """Fetch all prices in a single yf.download() batch call — fast and rate-limit friendly."""
+    """Fetch all prices in a single yf.download() batch call — fast and rate-limit friendly.
+
+    Uses ``previousClose`` from ``fast_info`` for accurate daily change
+    calculation, falling back to the second-to-last close in the batch data.
+    """
     symbol_map = _build_symbol_map()
     all_symbols = list(symbol_map.keys())
     now = datetime.utcnow()
 
     results = []
     try:
-        data = yf.download(all_symbols, period="2d", progress=False, threads=True)
+        data = yf.download(all_symbols, period="5d", progress=False, threads=True)
     except Exception:
         logger.exception("yf.download batch call failed")
         return results
@@ -68,6 +72,9 @@ def _fetch_batch_prices() -> list[dict]:
     if data.empty:
         logger.warning("yf.download returned empty DataFrame")
         return results
+
+    # Fetch previousClose for each symbol via fast_info (threaded)
+    prev_close_map = _fetch_previous_closes(all_symbols)
 
     multi_ticker = len(all_symbols) > 1
 
@@ -91,7 +98,11 @@ def _fetch_batch_prices() -> list[dict]:
                 continue
 
             close = float(close_series.iloc[-1])
-            prev = float(close_series.iloc[-2]) if len(close_series) >= 2 else None
+
+            # Use previousClose from fast_info (most accurate), fall back to iloc[-2]
+            prev = prev_close_map.get(symbol)
+            if prev is None and len(close_series) >= 2:
+                prev = float(close_series.iloc[-2])
             change_pct = ((close - prev) / prev * 100) if prev else None
 
             volume = None
@@ -117,6 +128,30 @@ def _fetch_batch_prices() -> list[dict]:
             logger.exception("Failed to process data for %s", symbol)
 
     return results
+
+
+def _fetch_previous_closes(symbols: list[str]) -> dict[str, float]:
+    """Fetch previousClose for each symbol using fast_info, threaded for speed."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _get_prev(symbol: str):
+        try:
+            info = yf.Ticker(symbol).fast_info
+            prev = info.get("previousClose") or info.get("previous_close")
+            if prev and prev == prev:  # not NaN
+                return symbol, float(prev)
+        except Exception:
+            logger.debug("Could not get previousClose for %s", symbol)
+        return symbol, None
+
+    result = {}
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        for symbol, prev in pool.map(_get_prev, symbols):
+            if prev is not None:
+                result[symbol] = prev
+
+    logger.info("Fetched previousClose for %d/%d symbols", len(result), len(symbols))
+    return result
 
 
 async def collect_prices(async_session) -> list[PriceSnapshot]:
