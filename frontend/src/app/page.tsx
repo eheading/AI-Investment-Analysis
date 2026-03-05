@@ -11,14 +11,16 @@ import Recommendations from '@/components/Recommendations';
 import ActiveStocks from '@/components/ActiveStocks';
 import TopGainers from '@/components/TopGainers';
 import Story from '@/components/Story';
+import PreMarket from '@/components/PreMarket';
 
-type Tab = 'overview' | 'news' | 'active' | 'gainers' | 'analysis' | 'story';
+type Tab = 'overview' | 'news' | 'active' | 'gainers' | 'premarket' | 'analysis' | 'story';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Market Overview' },
   { key: 'news', label: 'News Feed' },
   { key: 'active', label: 'Active Stocks' },
   { key: 'gainers', label: 'Top Gainers' },
+  { key: 'premarket', label: 'Pre-Market' },
   { key: 'analysis', label: 'AI Analysis' },
   { key: 'story', label: 'Story' },
 ];
@@ -205,6 +207,10 @@ export default function Home() {
 
         <div style={{ display: activeTab === 'gainers' ? 'block' : 'none' }}>
           <TopGainers />
+        </div>
+
+        <div style={{ display: activeTab === 'premarket' ? 'block' : 'none' }}>
+          <PreMarket />
         </div>
 
         <div style={{ display: activeTab === 'analysis' ? 'block' : 'none' }}>

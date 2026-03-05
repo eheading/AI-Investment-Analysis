@@ -1,4 +1,4 @@
-import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo, ActiveStock, ActiveStocksAnalysis, SavedStory } from '../types';
+import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo, ActiveStock, ActiveStocksAnalysis, SavedStory, PremarketData, PremarketAnalysis } from '../types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -202,6 +202,28 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ period, market }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+
+  // --- Pre-Market ---
+  getPremarketData: () => fetchAPI<PremarketData>('/premarket/data'),
+
+  analyzePremarket: async (): Promise<PremarketAnalysis> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 600_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/premarket/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
       });
       if (!res.ok) {

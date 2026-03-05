@@ -69,3 +69,51 @@ export interface SavedStory {
   content: string;
   saved_at: string;
 }
+
+export interface PremarketTickerData {
+  symbol: string;
+  name: string;
+  price: number;
+  prev_close: number | null;
+  change_pct: number | null;
+}
+
+export interface PremarketGlobalItem {
+  symbol: string;
+  name: string;
+  price: number;
+  change_pct: number | null;
+  category: string;
+  region: string;
+}
+
+export interface PremarketNewsItem {
+  title: string;
+  summary: string | null;
+  source: string;
+  published_at: string | null;
+}
+
+export interface PremarketData {
+  futures: PremarketTickerData[];
+  sector_etfs: PremarketTickerData[];
+  volatility_rates: PremarketTickerData[];
+  global_markets: PremarketGlobalItem[];
+  recent_news: PremarketNewsItem[];
+  collected_at: string;
+}
+
+export interface SectorPrediction {
+  sector: string;
+  direction: 'INFLOW' | 'OUTFLOW';
+  reasoning: string;
+  confidence: number;
+  top_picks: string[];
+}
+
+export interface PremarketAnalysis {
+  premarket_data: PremarketData;
+  analysis: string;
+  sector_predictions: SectorPrediction[];
+  model_used: string;
+}
