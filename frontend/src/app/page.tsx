@@ -219,7 +219,7 @@ export default function Home() {
         </div>
 
         <div style={{ display: activeTab === 'story' ? 'block' : 'none' }}>
-          <Story />
+          <Story visible={activeTab === 'story'} />
         </div>
       </main>
     </div>

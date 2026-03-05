@@ -47,7 +47,7 @@ function renderMarkdown(text: string, keyPrefix: string) {
   });
 }
 
-export default function Story() {
+export default function Story({ visible }: { visible?: boolean }) {
   const [stories, setStories] = useState<SavedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +78,11 @@ export default function Story() {
   }, []);
 
   useEffect(() => { fetchStories(); }, [fetchStories]);
+
+  // Re-fetch when tab becomes visible
+  useEffect(() => {
+    if (visible) fetchStories();
+  }, [visible, fetchStories]);
 
   const handleDelete = async (id: number) => {
     setDeleting(true);
