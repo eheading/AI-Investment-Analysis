@@ -163,9 +163,11 @@ export const api = {
   },
 
   // --- Stories ---
-  getStories: async (page = 1, limit = 50, market?: string): Promise<{ stories: SavedStory[]; total: number }> => {
+  getStories: async (page = 1, limit = 50, market?: string, source?: string, excludeSource?: string): Promise<{ stories: SavedStory[]; total: number }> => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (market) params.set('market', market);
+    if (source) params.set('source', source);
+    if (excludeSource) params.set('exclude_source', excludeSource);
     const res = await fetch(`http://localhost:8000/api/stories?${params}`);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();

@@ -40,6 +40,8 @@ async def list_stories(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     market: Optional[str] = Query(None),
+    source: Optional[str] = Query(None),
+    exclude_source: Optional[str] = Query(None),
     session: AsyncSession = Depends(get_db),
 ):
     """Return saved stories sorted by saved_at descending."""
@@ -49,6 +51,12 @@ async def list_stories(
     if market:
         query = query.where(SavedStory.market == market)
         count_query = count_query.where(SavedStory.market == market)
+    if source:
+        query = query.where(SavedStory.source == source)
+        count_query = count_query.where(SavedStory.source == source)
+    if exclude_source:
+        query = query.where(SavedStory.source != exclude_source)
+        count_query = count_query.where(SavedStory.source != exclude_source)
     result = await session.execute(
         query.order_by(SavedStory.saved_at.desc()).offset(offset).limit(limit)
     )
