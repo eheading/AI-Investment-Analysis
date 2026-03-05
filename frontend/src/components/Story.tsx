@@ -54,6 +54,9 @@ export default function Story({ visible }: { visible?: boolean }) {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Market filter
+  const [market, setMarket] = useState<'US' | 'HK'>('US');
+
   // Analysis
   const [period, setPeriod] = useState<Period>('1m');
   const [analysing, setAnalysing] = useState(false);
@@ -64,11 +67,11 @@ export default function Story({ visible }: { visible?: boolean }) {
   // Expanded story cards
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-  const fetchStories = useCallback(async () => {
+  const fetchStories = useCallback(async (m: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getStories(1, 200);
+      const data = await api.getStories(1, 200, m);
       setStories(data.stories);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load stories');
@@ -77,12 +80,12 @@ export default function Story({ visible }: { visible?: boolean }) {
     }
   }, []);
 
-  useEffect(() => { fetchStories(); }, [fetchStories]);
+  useEffect(() => { fetchStories(market); }, [fetchStories, market]);
 
   // Re-fetch when tab becomes visible
   useEffect(() => {
-    if (visible) fetchStories();
-  }, [visible, fetchStories]);
+    if (visible) fetchStories(market);
+  }, [visible, fetchStories, market]);
 
   const handleDelete = async (id: number) => {
     setDeleting(true);
@@ -103,7 +106,7 @@ export default function Story({ visible }: { visible?: boolean }) {
     setTrendAnalysis(null);
     setTranslatedTrend(null);
     try {
-      const data = await api.analyseStories(period);
+      const data = await api.analyseStories(period, market);
       setTrendAnalysis(data.analysis);
     } catch (e: unknown) {
       setAnalysisError(e instanceof Error ? e.message : 'Analysis failed');
@@ -136,7 +139,24 @@ export default function Story({ visible }: { visible?: boolean }) {
             <p className="mt-1 text-xs text-gray-500">Save AI analysis results from other pages, then analyse trends over time.</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Market toggle */}
+            <div className="flex rounded-lg border border-gray-700 overflow-hidden">
+              {(['US', 'HK'] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMarket(m)}
+                  className={`px-3 py-2 text-sm font-medium transition ${
+                    market === m
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-[#111118] text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {m === 'US' ? '🇺🇸 US' : '🇭🇰 HK'}
+                </button>
+              ))}
+            </div>
+
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value as Period)}

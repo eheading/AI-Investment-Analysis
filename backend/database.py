@@ -64,6 +64,7 @@ class SavedStory(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     source: Mapped[str] = mapped_column(String(50))  # e.g. active_stocks, top_gainers, money_flow, ai_analysis
+    market: Mapped[str] = mapped_column(String(10), default="US")  # "US" or "HK"
     title: Mapped[str] = mapped_column(String(500))
     content: Mapped[str] = mapped_column(Text)
     saved_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

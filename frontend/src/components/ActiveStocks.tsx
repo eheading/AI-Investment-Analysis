@@ -301,7 +301,7 @@ export default function ActiveStocks() {
               AI Analysis
             </span>
             <div className="flex items-center gap-2">
-              <SaveToStoryButton source="active_stocks_analysis" title={`Active Stocks AI Analysis (${market})`} content={analysis} />
+              <SaveToStoryButton source="active_stocks_analysis" title={`Active Stocks AI Analysis (${market})`} content={analysis} defaultMarket={market} />
               <TranslateToggle
                 originalText={analysis}
                 onTranslated={(t) => setTranslatedAnalysis(t)}
@@ -348,7 +348,7 @@ export default function ActiveStocks() {
               AI Money Flow Analysis
             </span>
             <div className="flex items-center gap-2">
-              <SaveToStoryButton source="active_stocks_money_flow" title={`Active Stocks Money Flow (${market})`} content={moneyFlow} />
+              <SaveToStoryButton source="active_stocks_money_flow" title={`Active Stocks Money Flow (${market})`} content={moneyFlow} defaultMarket={market} />
               <TranslateToggle
                 originalText={moneyFlow}
                 onTranslated={(t) => setTranslatedFlow(t)}

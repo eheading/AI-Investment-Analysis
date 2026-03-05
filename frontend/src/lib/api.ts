@@ -163,17 +163,19 @@ export const api = {
   },
 
   // --- Stories ---
-  getStories: async (page = 1, limit = 50): Promise<{ stories: SavedStory[]; total: number }> => {
-    const res = await fetch(`http://localhost:8000/api/stories?page=${page}&limit=${limit}`);
+  getStories: async (page = 1, limit = 50, market?: string): Promise<{ stories: SavedStory[]; total: number }> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (market) params.set('market', market);
+    const res = await fetch(`http://localhost:8000/api/stories?${params}`);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();
   },
 
-  saveStory: async (source: string, title: string, content: string): Promise<SavedStory> => {
+  saveStory: async (source: string, title: string, content: string, market: string): Promise<SavedStory> => {
     const res = await fetch('http://localhost:8000/api/stories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source, title, content }),
+      body: JSON.stringify({ source, title, content, market }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => null);
@@ -190,14 +192,14 @@ export const api = {
     }
   },
 
-  analyseStories: async (period: string): Promise<{ analysis: string; stories_analysed: number }> => {
+  analyseStories: async (period: string, market: string): Promise<{ analysis: string; stories_analysed: number }> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 600_000);
     try {
       const res = await fetch('http://localhost:8000/api/stories/analyse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period }),
+        body: JSON.stringify({ period, market }),
         signal: controller.signal,
       });
       if (!res.ok) {

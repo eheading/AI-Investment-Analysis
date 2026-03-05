@@ -25,10 +25,12 @@ class SaveStoryRequest(BaseModel):
     source: str
     title: str
     content: str
+    market: str = "US"  # "US" or "HK"
 
 
 class AnalyseStoriesRequest(BaseModel):
     period: str  # "1w", "1m", "3m"
+    market: str = "US"  # "US" or "HK"
 
 
 # --- Endpoints ---
@@ -37,15 +39,21 @@ class AnalyseStoriesRequest(BaseModel):
 async def list_stories(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
+    market: Optional[str] = Query(None),
     session: AsyncSession = Depends(get_db),
 ):
     """Return saved stories sorted by saved_at descending."""
     offset = (page - 1) * limit
+    query = select(SavedStory)
+    count_query = select(func.count(SavedStory.id))
+    if market:
+        query = query.where(SavedStory.market == market)
+        count_query = count_query.where(SavedStory.market == market)
     result = await session.execute(
-        select(SavedStory).order_by(SavedStory.saved_at.desc()).offset(offset).limit(limit)
+        query.order_by(SavedStory.saved_at.desc()).offset(offset).limit(limit)
     )
     stories = result.scalars().all()
-    total = (await session.execute(select(func.count(SavedStory.id)))).scalar() or 0
+    total = (await session.execute(count_query)).scalar() or 0
 
     return {
         "page": page,
@@ -55,6 +63,7 @@ async def list_stories(
             {
                 "id": s.id,
                 "source": s.source,
+                "market": s.market,
                 "title": s.title,
                 "content": s.content,
                 "saved_at": format_hkt(s.saved_at),
@@ -69,6 +78,7 @@ async def save_story(req: SaveStoryRequest, session: AsyncSession = Depends(get_
     """Save an AI analysis result as a story."""
     story = SavedStory(
         source=req.source,
+        market=req.market,
         title=req.title,
         content=req.content,
     )
@@ -78,6 +88,7 @@ async def save_story(req: SaveStoryRequest, session: AsyncSession = Depends(get_
     return {
         "id": story.id,
         "source": story.source,
+        "market": story.market,
         "title": story.title,
         "content": story.content,
         "saved_at": format_hkt(story.saved_at),
@@ -114,6 +125,7 @@ async def analyse_stories(req: AnalyseStoriesRequest, session: AsyncSession = De
     result = await session.execute(
         select(SavedStory)
         .where(SavedStory.saved_at >= cutoff)
+        .where(SavedStory.market == req.market)
         .order_by(SavedStory.saved_at.asc())
     )
     stories = result.scalars().all()

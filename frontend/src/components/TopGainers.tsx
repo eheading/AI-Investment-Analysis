@@ -301,7 +301,7 @@ export default function TopGainers() {
               AI Analysis
             </span>
             <div className="flex items-center gap-2">
-              <SaveToStoryButton source="top_gainers_analysis" title={`Top Gainers AI Analysis (${market})`} content={analysis} />
+              <SaveToStoryButton source="top_gainers_analysis" title={`Top Gainers AI Analysis (${market})`} content={analysis} defaultMarket={market} />
               <TranslateToggle
                 originalText={analysis}
                 onTranslated={(t) => setTranslatedAnalysis(t)}
@@ -348,7 +348,7 @@ export default function TopGainers() {
               AI Money Flow Analysis
             </span>
             <div className="flex items-center gap-2">
-              <SaveToStoryButton source="top_gainers_money_flow" title={`Top Gainers Money Flow (${market})`} content={moneyFlow} />
+              <SaveToStoryButton source="top_gainers_money_flow" title={`Top Gainers Money Flow (${market})`} content={moneyFlow} defaultMarket={market} />
               <TranslateToggle
                 originalText={moneyFlow}
                 onTranslated={(t) => setTranslatedFlow(t)}

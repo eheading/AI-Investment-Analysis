@@ -64,6 +64,7 @@ export interface ModelInfo {
 export interface SavedStory {
   id: number;
   source: string;
+  market: string;
   title: string;
   content: string;
   saved_at: string;
