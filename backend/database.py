@@ -59,6 +59,16 @@ class Setting(Base):
     value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
 
+class SavedStory(Base):
+    __tablename__ = "saved_stories"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    source: Mapped[str] = mapped_column(String(50))  # e.g. active_stocks, top_gainers, money_flow, ai_analysis
+    title: Mapped[str] = mapped_column(String(500))
+    content: Mapped[str] = mapped_column(Text)
+    saved_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
 async def get_db():
     """Dependency that yields an async database session."""
     async with async_session() as session:

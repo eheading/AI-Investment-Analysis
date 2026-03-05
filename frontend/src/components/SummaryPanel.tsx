@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import TranslateToggle from './TranslateToggle';
+import SaveToStoryButton from './SaveToStoryButton';
 
 export interface Recommendation {
   symbol: string;
@@ -157,12 +158,19 @@ export default function SummaryPanel({ summary, isLoading }: SummaryPanelProps) 
       <section>
         <div className="flex items-center justify-between mb-3">
           <SectionTitle icon={<ChartIcon />}>Market Summary</SectionTitle>
-          <TranslateToggle
-            originalText={summary.market_summary}
-            onTranslated={(t) => setTranslatedSummary(t)}
-            onRestore={() => setTranslatedSummary(null)}
-            isTranslated={translatedSummary !== null}
-          />
+          <div className="flex items-center gap-2">
+            <SaveToStoryButton
+              source="ai_market_analysis"
+              title="AI Market Analysis"
+              content={summary.market_summary + '\n\n---\n\n' + summary.news_digest}
+            />
+            <TranslateToggle
+              originalText={summary.market_summary}
+              onTranslated={(t) => setTranslatedSummary(t)}
+              onRestore={() => setTranslatedSummary(null)}
+              isTranslated={translatedSummary !== null}
+            />
+          </div>
         </div>
         <div className="rounded-lg bg-[#111118] p-5">
           <div

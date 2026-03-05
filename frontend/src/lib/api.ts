@@ -1,4 +1,4 @@
-import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo, ActiveStock, ActiveStocksAnalysis } from '../types';
+import type { PriceSnapshot, NewsArticle, AISummary, ModelInfo, ActiveStock, ActiveStocksAnalysis, SavedStory } from '../types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -157,6 +157,54 @@ export const api = {
       }
       const data = await res.json();
       return data.translated;
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+
+  // --- Stories ---
+  getStories: async (page = 1, limit = 50): Promise<{ stories: SavedStory[]; total: number }> => {
+    const res = await fetch(`http://localhost:8000/api/stories?page=${page}&limit=${limit}`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+
+  saveStory: async (source: string, title: string, content: string): Promise<SavedStory> => {
+    const res = await fetch('http://localhost:8000/api/stories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source, title, content }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `API error: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  deleteStory: async (id: number): Promise<void> => {
+    const res = await fetch(`http://localhost:8000/api/stories/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `API error: ${res.status}`);
+    }
+  },
+
+  analyseStories: async (period: string): Promise<{ analysis: string; stories_analysed: number }> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 600_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/stories/analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ period }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
     } finally {
       clearTimeout(timeout);
     }

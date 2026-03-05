@@ -5,6 +5,7 @@ import type { ActiveStock } from '@/types';
 import { api } from '@/lib/api';
 import ChartModal from './ChartModal';
 import TranslateToggle from './TranslateToggle';
+import SaveToStoryButton from './SaveToStoryButton';
 
 type Market = 'US' | 'HK';
 
@@ -299,12 +300,15 @@ export default function TopGainers() {
               </svg>
               AI Analysis
             </span>
-            <TranslateToggle
-              originalText={analysis}
-              onTranslated={(t) => setTranslatedAnalysis(t)}
-              onRestore={() => setTranslatedAnalysis(null)}
-              isTranslated={translatedAnalysis !== null}
-            />
+            <div className="flex items-center gap-2">
+              <SaveToStoryButton source="top_gainers_analysis" title={`Top Gainers AI Analysis (${market})`} content={analysis} />
+              <TranslateToggle
+                originalText={analysis}
+                onTranslated={(t) => setTranslatedAnalysis(t)}
+                onRestore={() => setTranslatedAnalysis(null)}
+                isTranslated={translatedAnalysis !== null}
+              />
+            </div>
           </h3>
           <div className="prose prose-invert prose-sm max-w-none text-gray-300 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>strong]:text-white [&>ul]:text-gray-300 [&>ol]:text-gray-300 whitespace-pre-wrap">
             {(translatedAnalysis ?? analysis).split('\n').map((line, i) => {
@@ -343,12 +347,15 @@ export default function TopGainers() {
               </svg>
               AI Money Flow Analysis
             </span>
-            <TranslateToggle
-              originalText={moneyFlow}
-              onTranslated={(t) => setTranslatedFlow(t)}
-              onRestore={() => setTranslatedFlow(null)}
-              isTranslated={translatedFlow !== null}
-            />
+            <div className="flex items-center gap-2">
+              <SaveToStoryButton source="top_gainers_money_flow" title={`Top Gainers Money Flow (${market})`} content={moneyFlow} />
+              <TranslateToggle
+                originalText={moneyFlow}
+                onTranslated={(t) => setTranslatedFlow(t)}
+                onRestore={() => setTranslatedFlow(null)}
+                isTranslated={translatedFlow !== null}
+              />
+            </div>
           </h3>
           <div className="prose prose-invert prose-sm max-w-none text-gray-300 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>strong]:text-white [&>ul]:text-gray-300 [&>ol]:text-gray-300 whitespace-pre-wrap">
             {(translatedFlow ?? moneyFlow).split('\n').map((line, i) => {

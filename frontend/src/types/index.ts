@@ -60,3 +60,11 @@ export interface ModelInfo {
   context_length: number;
   pricing: { prompt: number; completion: number };
 }
+
+export interface SavedStory {
+  id: number;
+  source: string;
+  title: string;
+  content: string;
+  saved_at: string;
+}

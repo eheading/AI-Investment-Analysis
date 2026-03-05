@@ -118,7 +118,7 @@ export default function Recommendations({ recommendations }: { recommendations: 
 
       {/* Chart Modal */}
       {chartSymbol && (
-        <ChartModal symbol={chartSymbol} onClose={() => setChartSymbol(null)} />
+        <ChartModal symbol={chartSymbol} name={chartSymbol} onClose={() => setChartSymbol(null)} />
       )}
     </section>
   );

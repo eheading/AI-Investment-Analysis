@@ -10,8 +10,9 @@ import SummaryPanel from '@/components/SummaryPanel';
 import Recommendations from '@/components/Recommendations';
 import ActiveStocks from '@/components/ActiveStocks';
 import TopGainers from '@/components/TopGainers';
+import Story from '@/components/Story';
 
-type Tab = 'overview' | 'news' | 'active' | 'gainers' | 'analysis';
+type Tab = 'overview' | 'news' | 'active' | 'gainers' | 'analysis' | 'story';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Market Overview' },
@@ -19,6 +20,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'active', label: 'Active Stocks' },
   { key: 'gainers', label: 'Top Gainers' },
   { key: 'analysis', label: 'AI Analysis' },
+  { key: 'story', label: 'Story' },
 ];
 
 const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -214,6 +216,10 @@ export default function Home() {
               <Recommendations recommendations={summary?.recommendations ?? []} />
             </div>
           </div>
+        </div>
+
+        <div style={{ display: activeTab === 'story' ? 'block' : 'none' }}>
+          <Story />
         </div>
       </main>
     </div>

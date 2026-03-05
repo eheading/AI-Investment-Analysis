@@ -11,6 +11,7 @@ from routers.settings import router as settings_router
 from routers.active_stocks import router as active_stocks_router
 from routers.top_gainers import router as top_gainers_router
 from routers.translate import router as translate_router
+from routers.stories import router as stories_router
 
 
 @asynccontextmanager
@@ -40,6 +41,7 @@ app.include_router(settings_router, prefix="/api")
 app.include_router(active_stocks_router, prefix="/api")
 app.include_router(top_gainers_router, prefix="/api")
 app.include_router(translate_router, prefix="/api")
+app.include_router(stories_router, prefix="/api")
 
 
 @app.get("/api/health")
