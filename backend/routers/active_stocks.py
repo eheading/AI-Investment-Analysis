@@ -35,37 +35,65 @@ HEADERS = {
 
 
 def _parse_table(html: str) -> list[dict]:
-    """Parse Yahoo Finance most-active table HTML into list of dicts."""
+    """Parse Yahoo Finance most-active table HTML into list of dicts.
+
+    Yahoo Finance table columns (as of 2026):
+    Symbol | Name | (icon) | Price | Change | Change% | Volume | Avg Vol | Market Cap | ...
+    The price cell often merges price+change+pct into one text blob.
+    """
     soup = BeautifulSoup(html, "lxml")
     table = soup.select_one("table")
     if not table:
         return []
 
+    # Detect column layout from headers
+    headers = [th.get_text(strip=True).lower() for th in table.select("thead th")]
+    col_map = {}
+    for i, h in enumerate(headers):
+        if h == "symbol":
+            col_map["symbol"] = i
+        elif h == "name":
+            col_map["name"] = i
+        elif h == "price":
+            col_map["price"] = i
+        elif h == "change":
+            col_map["change"] = i
+        elif h in ("change %", "change%"):
+            col_map["change_pct"] = i
+        elif h == "volume":
+            col_map["volume"] = i
+        elif h == "market cap":
+            col_map["market_cap"] = i
+
+    # Fallback to legacy positions if headers are missing
+    sym_i = col_map.get("symbol", 0)
+    name_i = col_map.get("name", 1)
+    price_i = col_map.get("price", 3)
+    change_i = col_map.get("change", 4)
+    pct_i = col_map.get("change_pct", 5)
+    vol_i = col_map.get("volume", 6)
+    cap_i = col_map.get("market_cap", 8)
+
+    min_cells = max(sym_i, name_i, price_i, change_i, pct_i, vol_i) + 1
+
     rows = table.select("tbody tr")
     results = []
     for row in rows:
         cells = row.select("td")
-        if len(cells) < 7:
+        if len(cells) < min_cells:
             continue
 
-        symbol = cells[0].get_text(strip=True)
-        name = cells[1].get_text(strip=True)
-        price_text = cells[2].get_text(strip=True)
-        change_text = cells[3].get_text(strip=True)
-        change_pct_text = cells[4].get_text(strip=True)
-        volume = cells[5].get_text(strip=True)
-        market_cap = cells[6].get_text(strip=True)
+        symbol = cells[sym_i].get_text(strip=True)
+        name = cells[name_i].get_text(strip=True)
+        change_text = cells[change_i].get_text(strip=True)
+        change_pct_text = cells[pct_i].get_text(strip=True)
+        volume = cells[vol_i].get_text(strip=True)
+        market_cap = cells[cap_i].get_text(strip=True) if len(cells) > cap_i else ""
 
-        # Clean price: handle zero-change stocks where change value may appear in price_text
-        price = price_text
-        if change_text and change_text != "0.00" and change_text in price_text:
-            price = price_text.replace(change_text, "", 1).strip()
-        elif "+" in price_text:
-            price = price_text.split("+")[0].strip()
-        elif price_text.count("-") > 1:
-            # Negative change embedded: split on last minus
-            idx = price_text.rfind("-")
-            price = price_text[:idx].strip()
+        # Price cell often contains price+change+pct merged together.
+        # Extract the leading numeric price from the blob.
+        price_text = cells[price_i].get_text(strip=True)
+        price = _extract_price(price_text, change_text)
 
         results.append({
             "symbol": symbol,
@@ -78,6 +106,25 @@ def _parse_table(html: str) -> list[dict]:
         })
 
     return results
+
+
+import re
+
+_PRICE_RE = re.compile(r"^[\d,]+\.?\d*")
+
+
+def _extract_price(price_text: str, change_text: str) -> str:
+    """Extract the clean price from a potentially merged price+change string."""
+    if not price_text:
+        return ""
+    # If the change value is embedded, strip it
+    if change_text and change_text in price_text:
+        price_text = price_text.split(change_text)[0]
+    # Strip any trailing +/- that precedes the change portion
+    price_text = price_text.rstrip("+-")
+    # Final regex extraction of leading number
+    m = _PRICE_RE.match(price_text)
+    return m.group(0) if m else price_text
 
 
 async def _scrape_active(market: str) -> list[dict]:
