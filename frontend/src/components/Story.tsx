@@ -30,6 +30,8 @@ const SOURCE_LABELS: Record<string, string> = {
   active_stocks_money_flow: 'Active Stocks – Money Flow',
   top_gainers_analysis: 'Top Gainers – AI Analysis',
   top_gainers_money_flow: 'Top Gainers – Money Flow',
+  top_losers_analysis: 'Top Losers – AI Analysis',
+  top_losers_money_flow: 'Top Losers – Money Flow',
   premarket_analysis: 'Pre-Market Analysis',
   ai_market_analysis: 'AI Market Analysis',
 };
@@ -256,6 +258,8 @@ export default function Story({ visible }: { visible?: boolean }) {
               <option value="active_stocks_money_flow">Active Stocks – Money Flow</option>
               <option value="top_gainers_analysis">Top Gainers – AI Analysis</option>
               <option value="top_gainers_money_flow">Top Gainers – Money Flow</option>
+              <option value="top_losers_analysis">Top Losers – AI Analysis</option>
+              <option value="top_losers_money_flow">Top Losers – Money Flow</option>
               <option value="premarket_analysis">Pre-Market Analysis</option>
               <option value="ai_market_analysis">AI Market Analysis</option>
             </select>

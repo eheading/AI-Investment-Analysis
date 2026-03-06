@@ -65,6 +65,8 @@ export const api = {
     fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/active-stocks/${market}?_t=${Date.now()}`),
   getTopGainers: (market: string) =>
     fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/top-gainers/${market}?_t=${Date.now()}`),
+  getTopLosers: (market: string) =>
+    fetchAPI<{ market: string; stocks: ActiveStock[] }>(`/top-losers/${market}?_t=${Date.now()}`),
   analyzeActiveStocks: async (market: string, symbols?: string[]): Promise<ActiveStocksAnalysis> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 600_000); // 10 min timeout
@@ -127,6 +129,44 @@ export const api = {
     const timeout = setTimeout(() => controller.abort(), 600_000);
     try {
       const res = await fetch('http://localhost:8000/api/top-gainers/money-flow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+  analyzeTopLosers: async (market: string, symbols?: string[]): Promise<ActiveStocksAnalysis> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 600_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/top-losers/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market, symbols }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `API error: ${res.status}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+  analyzeLosersMoneyFlow: async (market: string): Promise<{ market: string; analysis: string; model_used: string }> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 600_000);
+    try {
+      const res = await fetch('http://localhost:8000/api/top-losers/money-flow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ market }),
