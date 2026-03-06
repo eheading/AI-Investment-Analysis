@@ -1,10 +1,12 @@
 """Active stocks scraper and AI analysis router."""
 
+import asyncio
 import logging
 from typing import Optional
 
 import httpx
 from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -128,11 +130,28 @@ def _extract_price(price_text: str, change_text: str) -> str:
 
 
 async def _scrape_active(market: str) -> list[dict]:
-    """Scrape active stocks for the given market."""
+    """Scrape active stocks for the given market using Playwright for JS-rendered content."""
     url = URLS.get(market.upper())
     if not url:
         raise HTTPException(status_code=400, detail=f"Unknown market: {market}. Use US or HK.")
 
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page(user_agent=HEADERS["User-Agent"])
+            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            await page.wait_for_selector("table tbody tr", timeout=15000)
+            # Brief wait for JS to hydrate real-time prices
+            await asyncio.sleep(2)
+            html = await page.content()
+            await browser.close()
+        stocks = _parse_table(html)
+        if stocks:
+            return stocks
+    except Exception as exc:
+        logger.warning("Playwright scrape failed, falling back to httpx: %s", exc)
+
+    # Fallback to httpx if Playwright fails
     async with httpx.AsyncClient(headers=HEADERS, timeout=20.0, follow_redirects=True) as client:
         resp = await client.get(url)
         resp.raise_for_status()

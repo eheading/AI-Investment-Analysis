@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from database import get_db, PriceSnapshot
-from collectors.price_collector import collect_prices, get_latest_prices
+from collectors.price_collector import collect_prices, get_latest_prices, fetch_live_prices
 from tz import format_hkt
 
 router = APIRouter(prefix="/market", tags=["market"])
@@ -20,6 +20,23 @@ async def get_prices(session: AsyncSession = Depends(get_db)):
             "category": p.category, "region": p.region, "fetched_at": format_hkt(p.fetched_at),
         }
         for p in prices
+    ]
+
+
+@router.get("/live")
+async def get_live_prices():
+    """Fetch real-time prices directly from yfinance (no DB, no cache)."""
+    from datetime import datetime
+    raw = await fetch_live_prices()
+    return [
+        {
+            "id": 0, "symbol": item["symbol"], "name": item["name"],
+            "price": item["price"], "change_pct": item["change_pct"],
+            "volume": item["volume"], "market_cap": item["market_cap"],
+            "category": item["category"], "region": item["region"],
+            "fetched_at": item["fetched_at"].isoformat() if isinstance(item["fetched_at"], datetime) else str(item["fetched_at"]),
+        }
+        for item in raw
     ]
 
 

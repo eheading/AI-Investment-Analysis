@@ -77,7 +77,7 @@ export default function Home() {
 
     const interval = setInterval(async () => {
       const results = await Promise.allSettled([
-        api.getMarketPrices(),
+        api.getLivePrices(),
         api.getNews(),
       ]);
       if (results[0].status === 'fulfilled') setPrices(results[0].value);
@@ -95,7 +95,7 @@ export default function Home() {
     setIsRefreshing(true);
     try {
       await Promise.allSettled([api.refreshPrices(), api.refreshNews()]);
-      const results = await Promise.allSettled([api.getMarketPrices(), api.getNews()]);
+      const results = await Promise.allSettled([api.getLivePrices(), api.getNews()]);
       if (results[0].status === 'fulfilled') setPrices(results[0].value);
       if (results[1].status === 'fulfilled') setArticles(results[1].value);
     } finally {

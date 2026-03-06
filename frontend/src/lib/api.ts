@@ -18,6 +18,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 export const api = {
   getMarketPrices: () => fetchAPI<PriceSnapshot[]>('/market/prices'),
+  getLivePrices: () => fetchAPI<PriceSnapshot[]>('/market/live'),
   refreshPrices: () => fetchAPI<{ count: number }>('/market/refresh', { method: 'POST' }),
   getNews: async () => {
     const res = await fetchAPI<{ articles: NewsArticle[] }>('/news');

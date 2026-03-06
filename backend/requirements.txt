@@ -13,3 +13,4 @@ pydantic-settings==2.1.0
 requests==2.31.0
 lxml==5.1.0
 greenlet>=3.0.0
+playwright

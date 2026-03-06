@@ -53,21 +53,33 @@ def _build_symbol_map() -> dict:
 
 
 def _fetch_batch_prices() -> list[dict]:
-    """Fetch all prices in a single yf.download() batch call — fast and rate-limit friendly.
+    """Fetch all prices using intraday data for real-time accuracy.
 
-    Uses ``previousClose`` from ``fast_info`` for accurate daily change
-    calculation, falling back to the second-to-last close in the batch data.
+    Uses ``period="1d", interval="1m"`` to get the latest 1-minute candle,
+    which reflects the most recent traded price during market hours.
+    Falls back to ``period="5d"`` daily data for symbols where intraday fails.
+    Uses ``previousClose`` from ``fast_info`` for accurate daily change calculation.
     """
     symbol_map = _build_symbol_map()
     all_symbols = list(symbol_map.keys())
     now = datetime.utcnow()
 
     results = []
+
+    # Try intraday 1-minute data first for real-time prices
     try:
-        data = yf.download(all_symbols, period="5d", progress=False, threads=True)
+        data = yf.download(all_symbols, period="1d", interval="1m", progress=False, threads=True)
     except Exception:
-        logger.exception("yf.download batch call failed")
-        return results
+        logger.warning("Intraday yf.download failed, falling back to daily data")
+        data = None
+
+    # Fallback to daily data if intraday returned nothing
+    if data is None or data.empty:
+        try:
+            data = yf.download(all_symbols, period="5d", progress=False, threads=True)
+        except Exception:
+            logger.exception("yf.download batch call failed")
+            return results
 
     if data.empty:
         logger.warning("yf.download returned empty DataFrame")
@@ -191,3 +203,12 @@ async def get_latest_prices(async_session) -> list[PriceSnapshot]:
         select(PriceSnapshot).join(subquery, PriceSnapshot.id == subquery.c.max_id)
     )
     return result.scalars().all()
+
+
+async def fetch_live_prices() -> list[dict]:
+    """Fetch live prices directly from yfinance without DB storage.
+
+    Returns dicts matching the PriceSnapshot schema for frontend consumption.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _fetch_batch_prices)
